@@ -1,0 +1,242 @@
+$$$Overview
+This program presents an IDE to create GUIs in Python.
+A GUI is a Graphical User Interface.  
+It is a program that presents a window with buttons, textfields,
+labels, and many more so-called widgets that the user interacts with.
+
+Interaction occurs when the user presses a button, types text into a
+field or textarea, moves a scrollbar, clicks on a checkbox or radiobutton,
+or selects a menu option.
+
+Interaction with a widget is often accompanied by a Python command,
+which is just a call to a function.  Each widget should have its own
+interaction function, if it needs one.  These functions are edited through
+the 'Code window.'
+
+$$$Python requirement
+You must use Python 3.6 or later.  This program uses the tkinter
+graphical user interface that comes with standard Python.  No extra
+installation is needed.
+
+$$$Sample programs
+There are a bunch of sample GUI programs illustrating how to do
+various things in the Samples menu.  Just select one and it will fill
+your window with some widgets. Then save it somewhere as .py file.
+Finally just click on the Run menu and select 'Run this gui'.  The new
+window that you will see is a stand-alone Python gui.
+
+$$$Widgets
+Button
+Label
+Textfield
+Textarea
+Checkbox
+Radiobutton
+Choice
+List
+Canvas
+Scrollbar
+Menus
+
+(Explain what each one means)
+
+$$$Creating widgets
+In the blank area, press down the mouse and start dragging a red box.
+When you are satisfied with the size, pull down the Widgets menu and
+select 'New'.  This makes a generic button widget that you can now edit
+by changing its properties.
+
+$$$Properties of widgets
+Select a widget first by clicking on it till its outline turns red.  Then either
+click the Properties button in the lower left corner or select Properties
+from the Widgets menu.  A properties window appears that you can
+enter information into.  It is recommended that you click the Apply or
+Cancel button the properties window before you click on another
+widget (i.e. change the focused box).
+
+Some of the fields are disabled, based on the type of the widget, 
+since they are about fields that do not apply to that type of widget.
+If you change the type of the widget, it doesn't immediately enable
+the fields.  Just click on Apply and then open the properties window
+again.  (It is not clear why this is needed... maybe in the future we
+can find and fix this.)
+
+$$$Selecting widgets (focusing)
+Click on a widget to select it.  Its outline turns red and its interior color
+changes to yellow.  Once you select a widget you can alter its properties,
+move it around, resize it, copy it, and delete it.
+
+To deselect a widget, click on another widget or just click on the white
+background.
+
+We also say that a box that we've clicked on is focused, or is the
+focus widget (or box.)
+
+$$$Multiselecting widgets
+Outline a red box, as you normally would in the blank field to make a
+widget, then click the 'multiselected' checkbox in the lower right corner
+or press the 'm' key.
+
+Multiselecting means that more than one widget is considered to be
+selected, and can be used to move, copy or delete a bunch of widgets
+at the same time.
+
+The upper right corner of the box, or the lower left corner of the box,
+must be inside the red outline in order to have it included in the 
+multiselected set of boxes.
+
+$$$Moving and resizing widgets
+You can move a widget by clicking once on a widget to focus it,
+and then dragging it around.
+
+You can resize a widget by clicking once in it to focus, and then 
+clicking on the tiny box in the lower right hand corner and then
+dragging your mouse.  The box resizes as you drag within that
+tiny corner box.
+
+When you are done, just click on the empty field outside the box.
+
+You can move boxes with greater precision by using the keyboard
+keys  h, j, k and l.  You can also resize by using the keyboard
+keys H, J, K and L.  See another section in this help window.
+
+$$$Copying, pasting and deleting widgets
+Once you have focused a box, you can copy it by pressing the
+'c' key.  Then to make a copy, simply press the 'v' key to paste a
+new similar box.  The new box has the same name and type and
+all other attributes, except its position will be off a little ways so
+you can see both boxes and drag the new one to a new position.
+
+Once you've focused a box, you can delete that box by pressing
+the 'd' key.  You can undo that by pressing the 'u' key.
+
+$$$Code window
+The code window shows the functions and other code that
+are necessary to respond to events.  You can also put imports
+and class declarations in the code area, but mostly it will be
+functions.
+
+Each button should have a function name associated with it.
+This is shown in the Property window, next to 'Function to call.'
+Do not put parentheses after this function's name!!!!  It will not
+work if you do that.
+
+In your code area make a function without any parameters
+with the name of the function to call.  Then in that function,
+you can use various functions to get and set data in widgets
+(see that section.)
+
+$$$Functions to get and set widget data
+settext(someTA, 'whatever')
+x = gettext(someTA)
+y = getselected(someList)   # get the selected line
+
+$$$auxiliary functions
+popup('something')
+x = askforstring('What is your name?')
+response = askforyesno("Do you agree with this?")
+if response:   # do something
+text = readFile("somefile")
+writeFile("somefile", newtext)
+if not exists("somefile"): ...
+
+$$$post initialization code
+If you put a function in your code window like the following:
+
+def post_initialization():
+
+then any code in there will be executed after your GUI window
+is started.  This is very useful if you want to put intial values
+into fields or areas.
+
+$$$Fonts
+Fonts are given as strings of the form:
+          fontname  size  style
+
+Here are several common examples:
+
+'Helvetica 9'
+'Helvetica 12 bold'
+'Courier 10'
+'Times 24 bold'
+'Roman 24 bold'
+'Normal 24 bold'   -- sans serif
+'Italic 12 bold'
+'Normal 12 Underline'
+'Normal 12 Overstrike'
+
+Don't include the quotes when you put the font specification
+into the Property Window.
+$$$Documentation window
+The documentation window is like the code window, except
+that it contains raw text that want to store with your GUI.  It
+is never visible in the running program, only when you are 
+using PyPyGUIM.
+
+$$$Menus
+You can make menus for your GUI.  Click on the Code menu of
+PyPyGUIM and select 'Menus."  This opens the Menu window.
+There is a sample button that you can use to get started.
+
+The menus are simply names, with menuitems underneath 
+and indented.  Each menuitem can have a function associated
+with it.  This appears after the menuitem name, separated by
+an ampersand.  See the sample below:
+
+File
+     Load&nothing
+     Save&nothing
+     Exit&kill
+Edit
+     Cut
+     Paste
+Options
+     Global options&nothing
+Help
+     #this is a comment
+
+$$$Key commands
+Many commands can be given to PyPyGUIM via one of the menus or by 
+pressing a key on the keyboard.
+
+$$$Fine widget movements and adjustments
+You can use the keyboard to move boxes around in a very fine way,
+i.e. one pixel at a time.  You can also use the keyboard to make them
+narrower or wider, taller or shorter.  
+
+(The keys selected are the same as Unix's 'vi' keyboard movements.)
+
+h = move topbox one pixel left
+l = move topbox one pixel right
+j = move topbox one pixel down
+k = move topbox one pixel up
+
+H = make topbox one pixel narrower   (lessen its width by 1)
+L = make topbox one pixel wider         (increase its width by 1)
+J = make topbox one pixel taller          (increase its height by 1)
+K = make topbox one pixel shorter       (decrease its height by 1)
+
+$$$Format of the file that is saved
+When PyPyGUIM saves your file, it writes a bunch of comments at the
+top of the file that enable it to resurrect all the information about the
+widgets.  All of these comments start with #. and are all at the top.
+If you remove those widgets, the raw Python program still runs but
+PyPyGUIM cannot depict the widgets on the screen anymore.  Since
+the comments are not voluminous and don't hurt anything, it is 
+recommended that you leave them there.  But if you want to give the
+user a simple Python file, you could remove them.
+
+PyPyGUIM is not able to read the raw Python file and reconstruct the
+widgets so it can display them graphically, although some systems do
+indeed do that.
+
+$$$History of this project
+Mid-2003       -- GUIMAKER written, a Java GUI program that makes 
+                        Java GUI applications
+March 9, 2015  -- PyGUIMAKER started, another Java program that makes
+                        Python GUI applications; very similar to
+                        GUIMAKER
+April 13, 2022 -- started working on this  program, experimenting
+                        with many GUI things in Python's tkinter system.
+May 23, 2022   -- Version 0 done, the first real working version
+June 3, 2022   -- Version 10 done, the current version
