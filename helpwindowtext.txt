@@ -216,6 +216,28 @@ L = make topbox one pixel wider         (increase its width by 1)
 J = make topbox one pixel taller          (increase its height by 1)
 K = make topbox one pixel shorter       (decrease its height by 1)
 
+$$$Colors
+You can use many simple names for colors:
+          red,  yellow,    blue,  green,   cyan,   magenta,   black, white
+          orange, purple, skyblue, gray
+
+Or you can use RGB in hex form:        #RRGGBB
+
+         #ff0000  = red
+         #00ff00  = green
+         #0000ff  = blue
+
+This allows you to make fine grains of color shading.  A nice
+light gray is     #e6e6e6
+
+$$$Resizing
+def resizeMe(event):
+	global canvas
+	x = root.winfo_geometry().split("+")[0].split("x")
+	new_width = int(x[0])
+	new_height= int(x[1])
+	canvas.place(x=0,y=0,width=new_width, height=new_height)
+
 $$$Format of the file that is saved
 When PyPyGUIM saves your file, it writes a bunch of comments at the
 top of the file that enable it to resurrect all the information about the

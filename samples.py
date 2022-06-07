@@ -1,36 +1,50 @@
-sample1 = '''#.PYPYGUIM 8;Mon May 30, 2022  system:IC-27069
+sample1 = '''#.PYPYGUIM 11;Tue Jun 07, 2022  system:IC-27069
 #.$$$documentation
 #.This is a very simple first application, showing how buttons
 #.cause events.
 #.$$$end-documentation
+#.$$$options
+#.title:Sample1 -- click on a button
+#.geom:685x450
+#.bgcolor:#c3c3c3
+#.$$$end-options
 #.$$$code
 #.def ageNextYear():
 #.     age = int(gettext(ageTF))
 #.     age += 1
 #.     settext(ageTF,str(age))
 #.$$$end-code
+#.$$$menus
+#.
+#.$$$end-menus
 #.$$$widgets
 #.$$$$id:1 name:doitB type:button start:330,30 end:568,86 label:Age next year
-#.code:ageNextYear
+#.font:Helvetica 9
 #.colors: bgcolor:#ffffff fgcolor:#000000
+#.code:ageNextYear
 #.//end:
 #.
 #.$$$$id:2 name:ageTF type:textfield start:250,35 end:304,63 label:42
-#.myvar:ageTF_var
+#.font:Helvetica 9
 #.colors: bgcolor:#ffffff fgcolor:#000000
+#.myvar:ageTF_var
 #.//end:
 #.
 #.$$$$id:3 name:bigTA type:textarea start:62,221 end:443,341 label:Example
+#.font:Helvetica 9
 #.colors: bgcolor:#000000 fgcolor:#ffffff
 #.//end:
 #.
-#.$$$$id:4 name:ageL type:label start:61,36 end:243,63 label:Age:
-#.colors: bgcolor:#ffafaf fgcolor:#000000
+#.$$$$id:4 name:ageL type:label start:179,34 end:247,72 label:Age:
+#.font:Helvetica 12 bold
+#.colors: bgcolor:#c3c3c3 fgcolor:#000000
+#.choices:
 #.//end:
 #.
 #.$$$end-widgets
 #.$%end
 #.END
+#.
 '''
 
 sample2 = '''#.PYPYGUIM 10;Thu Jun 02, 2022  system:IC-25965
@@ -39,7 +53,7 @@ sample2 = '''#.PYPYGUIM 10;Thu Jun 02, 2022  system:IC-25965
 #.that into a textfield.
 #.$$$end-documentation
 #.$$$options
-#.title:Python GUI app
+#.title:Sample1 -- using a popup to get a string
 #.geom:692x447
 #.bgcolor:white
 #.$$$end-options
@@ -74,7 +88,7 @@ sample3 = '''#.PYPYGUIM 10;Thu Jun 02, 2022  system:IC-25965
 #.This illustrates how to get a radio button's current value.
 #.$$$end-documentation
 #.$$$options
-#.title:Python GUI app
+#.title:Sample3 -- get radio button's current value
 #.geom:685x450
 #.bgcolor:white
 #.$$$end-options
@@ -124,13 +138,12 @@ sample3 = '''#.PYPYGUIM 10;Thu Jun 02, 2022  system:IC-25965
 #.END
 '''
 
-
 sample4 = '''#.PYPYGUIM 10;Thu Jun 02, 2022  system:IC-25965
 #.$$$documentation
 #.This illustrates how to get a selected line from a list widget.
 #.$$$end-documentation
 #.$$$options
-#.title:Python GUI app
+#.title:Sample4 -- Get the selected line from a list widget
 #.geom:692x447
 #.bgcolor:white
 #.$$$end-options
@@ -158,12 +171,12 @@ sample4 = '''#.PYPYGUIM 10;Thu Jun 02, 2022  system:IC-25965
 #.END
 '''
 
-sample5='''#.PYPYGUIM 10;Fri Jun 03, 2022  system:IC-25858
+sample5 = '''#.PYPYGUIM 10;Fri Jun 03, 2022  system:IC-25858
 #.$$$documentation
 #.This illustrates how to respond to menu events.
 #.$$$end-documentation
 #.$$$options
-#.title:Python GUI app
+#.title:Sample5 -- Respond to menu events
 #.geom:504x447
 #.bgcolor:white
 #.$$$end-options
@@ -239,13 +252,13 @@ sample5='''#.PYPYGUIM 10;Fri Jun 03, 2022  system:IC-25858
 #.END
 '''
 
-sample6='''#.PYPYGUIM 10;Fri Jun 03, 2022  system:IC-25965
+sample6 = '''#.PYPYGUIM 10;Fri Jun 03, 2022  system:IC-25965
 #.$$$documentation
 #.This illustrates how to respond to the event of pressing ENTER
 #.inside a textfield.
 #.$$$end-documentation
 #.$$$options
-#.title:Python GUI app
+#.title:Sample6 -- pressing ENTER in a textfield to trigger an action
 #.geom:694x447
 #.bgcolor:white
 #.$$$end-options
@@ -276,7 +289,7 @@ sample7 = '''#.PYPYGUIM 10;Thu Jun 02, 2022  system:IC-25965
 #.This illustrates all widgets, though it is not a useful application.
 #.$$$end-documentation
 #.$$$options
-#.title:Python GUI app
+#.title:Sample7 -- all widgets example
 #.geom:648x474
 #.bgcolor:white
 #.$$$end-options
@@ -423,3 +436,4 @@ sample7 = '''#.PYPYGUIM 10;Thu Jun 02, 2022  system:IC-25965
 #.$%end
 #.END
 '''
+

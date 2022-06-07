@@ -176,10 +176,11 @@ def exists(filename):
 ##%MODULECODE
 from classes import *
 import sys,os
-from PropWindow import *
+from PropertyWindow import *
 from CodeWindow import *
 from DocWindow import *
 from MenuWindow import *
+from OptionsWindow import *
 from tkinter.filedialog import askopenfilename,asksaveasfilename,askdirectory
 import tkinter, tkinter.filedialog
 import FileBrowser
@@ -607,6 +608,11 @@ def openMenuWindow():
      menuwin = MenuWindow()
      menuwin.setGlobals(globals)
 
+def openOptionsWindow():
+     global optionswin
+     optionswin = OptionsWindow()
+     optionswin.setFields(globals)
+
 def showWidgets():
      popup(globals.listWidgets())
 
@@ -656,7 +662,7 @@ def saveas():
 def saveDirectives():
      filename = tkinter.filedialog.asksaveasfilename()
      fp = open(filename, "w")
-     fp.write(globals.makeImage())
+     fp.write(globals.makeDirectives())
      fp.close()
 
 def runThisGui():
@@ -938,7 +944,7 @@ def main():
      menu1.add_command(label="Load", command=loadData, underline=0)
      menu1.add_command(label="Save", command=save, underline=0)
      menu1.add_command(label="Save As...", command=saveas, underline=0)
-     menu1.add_command(label="Sample only directives", command=saveDirectives, underline=0)
+     menu1.add_command(label="Save only directives", command=saveDirectives, underline=0)
      menu1.add_command(label="Quit", command=quitme, underline=0)
      menu2 = Menu(topmenu)
      topmenu.add_cascade(label="Widgets", menu=menu2, underline=0)
@@ -970,18 +976,21 @@ def main():
      menu7.add_command(label="File Viewer", command=openFileViewer, underline=0)
      menu7.add_command(label="File Browser", command=openFileBrowser, underline=0)
      menu8 = Menu(topmenu)
-     topmenu.add_cascade(label="Samples", menu=menu8, underline=0)
-     menu8.add_command(label="Simple", command=sample1, underline=0)
-     menu8.add_command(label="Prompt for name", command=sample2, underline=0)
-     menu8.add_command(label="Radio button", command=sample3, underline=0)
-     menu8.add_command(label="List example", command=sample4, underline=0)
-     menu8.add_command(label="Menu example", command=sample5, underline=0)
-     menu8.add_command(label="Pressing enter in textfield", command=sample6, underline=0)
-     menu8.add_command(label="All widgets", command=sample7, underline=0)
+     topmenu.add_cascade(label="Options", menu=menu8, underline=0)
+     menu8.add_command(label="Options", command=openOptionsWindow, underline=0)
      menu9 = Menu(topmenu)
-     topmenu.add_cascade(label="Help", menu=menu9, underline=0)
-     menu9.add_command(label="Help", command=openHelpWindow, underline=0)
-     menu9.add_command(label="Version", command=showVersion, underline=0)
+     topmenu.add_cascade(label="Samples", menu=menu9, underline=0)
+     menu9.add_command(label="Simple", command=sample1, underline=0)
+     menu9.add_command(label="Prompt for name", command=sample2, underline=0)
+     menu9.add_command(label="Radio button", command=sample3, underline=0)
+     menu9.add_command(label="List example", command=sample4, underline=0)
+     menu9.add_command(label="Menu example", command=sample5, underline=0)
+     menu9.add_command(label="Pressing enter in textfield", command=sample6, underline=0)
+     menu9.add_command(label="All widgets", command=sample7, underline=0)
+     menu10 = Menu(topmenu)
+     topmenu.add_cascade(label="Help", menu=menu10, underline=0)
+     menu10.add_command(label="Help", command=openHelpWindow, underline=0)
+     menu10.add_command(label="Version", command=showVersion, underline=0)
 
      post_initialization()
      root.mainloop()
@@ -994,7 +1003,7 @@ if __name__ == '__main__':
 ##%PROGRAM DATE=Fri, Jun 11, 2021 9:25:02 PM
 ##%VERSION=PY2
 ##%CLASS_STYLE=no class
-##%WHENWRITTEN=Sat Jun 04 21:56:43 EDT 2022
+##%WHENWRITTEN=Mon Jun 06 23:10:20 EDT 2022
 ##%CLASSNAME=xmainwindow
 ##%PACKAGENAME=
 ##%DIRECTORY=
@@ -1014,7 +1023,7 @@ if __name__ == '__main__':
 ##%   Load&loadData
 ##%   Save&save
 ##%   Save As...&saveas
-##%   Sample only directives&saveDirectives
+##%   Save only directives&saveDirectives
 ##%   Quit&quitme
 ##%Widgets
 ##%   New&makeNewWidget
@@ -1039,6 +1048,8 @@ if __name__ == '__main__':
 ##%Tools
 ##%   File Viewer&openFileViewer
 ##%   File Browser&openFileBrowser
+##%Options
+##%  Options&openOptionsWindow
 ##%Samples
 ##%   Simple&sample1
 ##%   Prompt for name&sample2

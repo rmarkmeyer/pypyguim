@@ -302,9 +302,11 @@ def window_init():
 #     root.title("Python application")
 
 window_init_code2 = """
+     global canvas
      canvas = Canvas(bd=0, highlightthickness=0)
      canvas.pack(fill=BOTH, expand=1)
      canvas.bind("<Configure>", resizeMe)
+     canvas.place(x=0,y=0,width=685,height=445)
 """
 
 #---------------------------------------------------------------------------------------------------------------------------------------------------------

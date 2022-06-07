@@ -3,8 +3,8 @@ import os,os.path,sys
 import utilitycode
 import guitemplatecode
 
-current_version = 10
-acceptable_difference = 2
+current_version = 11
+acceptable_difference = 3
 
 class Globals:
 	def __init__(self):
@@ -14,14 +14,18 @@ class Globals:
 		if "widgets" in self.__dict__:
 			for widget in self.widgets:
 				widget.clearbox()
+
+		self.title = "Python GUI app"
+		self.bgcolor = "white"
+		self.allowResize = False
+
 		self.widgets = []
 		self.code = ""
 		self.menus = ""
 		self.lastLoadedImage = ""
 		self.window_width = 685
 		self.window_height = 450
-		self.title = "Python GUI app"
-		self.bgcolor = "white"
+
 		self.documentation = ""       # internal documentation
 		self.deleteds = []                 # not saved, just temporary
 
@@ -31,7 +35,7 @@ class Globals:
 			widget.clearbox()
 			widget.paintme()
 		#print("--------------------------------------")
-		sys.stdout.flush()
+		#sys.stdout.flush()
 
 	def add(self, widget):
 		self.widgets.append(widget)
@@ -200,7 +204,7 @@ class Globals:
 			#print("applied canvas to "+str(widget.id))
 		sys.stdout.flush()
 
-	def makeImage(self):
+	def makeDirectives(self):
 		'''   this saves the directives in Python comments, starting with #.
 		'''
 		now = datetime.now()
@@ -242,7 +246,10 @@ class Globals:
 		'''  This builds the Python tkinter file that will implement the GUI for the user.
 		    This is the desired endpoint of this whole thing! 
 		    The directives are stored at the beginning with Python comments, starting with #.
+		    The user of this method should check self.errors at the end
 		'''
+		self.errors = ""
+
 		image = guitemplatecode.preamble
 		image += "#------------------------------ module code -------------------------------------------\n"
 		image += self.code + "\n"
@@ -263,9 +270,17 @@ class Globals:
 		image += "     root.configure(background=\"" + self.bgcolor + "\")\n"
 		image += "     root.title(\"" + self.title + "\")\n"
 		image += "     canvas = Canvas(bd=0, highlightthickness=0)\n"
-		for line in self.code.split("\n"):
-			if line.startswith("def resizeMe("):
-				image += "     canvas.bind(\"<Configure>\", resizeMe)\n"
+		if self.allowResize:
+			foundResize = False
+			for line in self.code.split("\n"):
+				if line.startswith("def resizeMe("):
+					foundResize = True
+					image += "     canvas.bind(\"<Configure>\", resizeMe)\n"
+			if not foundResize:
+				self.errors += "You specified that you want to allow resizing of the window,\n"
+				self.errors += "but there was no method like the following:\n\n"
+				self.errors += "     def resizeMe(event):\n"
+				self.errors += "             pass\n\n"
 		image += "     canvas.configure(background=\"" + self.bgcolor + "\")\n"
 		#image += guitemplatecode.window_init_code2
 		image += guitemplatecode.make_main
@@ -313,7 +328,7 @@ class Globals:
 					#print("...line="+line)
 					parts = line.strip().split("&")
 					#print("...parts="+str(parts))
-					sys.stdout.flush()
+					#sys.stdout.flush()
 					menuitem = parts[0]
 					command="nothing"
 					if len(parts) == 2:
@@ -327,7 +342,7 @@ class Globals:
 				break
 			
 		image += guitemplatecode.postlude
-		newimage = self.makeImage() + "\n"
+		newimage = self.makeDirectives() + "\n"
 		newimage += image
 		return newimage
 
