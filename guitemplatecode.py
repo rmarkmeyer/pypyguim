@@ -125,6 +125,12 @@ def askforyesno(prompt):
 	'''
 	return box.askquestion('request for yes/no', prompt)
 
+def promptForFilename(prompt):
+     return filedialog.askopenfilename(title=prompt)
+
+def promptForFileSavename(prompt):
+     return filedialog.asksaveasfilename(title=prompt)
+
 def getselected(somelistbox):
 	'''
 		Use this to get the currently selected text from a listbox.

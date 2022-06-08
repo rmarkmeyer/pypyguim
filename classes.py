@@ -3,8 +3,8 @@ import os,os.path,sys
 import utilitycode
 import guitemplatecode
 
-current_version = 11
-acceptable_difference = 3
+current_version = 13
+acceptable_difference = 0
 
 class Globals:
 	def __init__(self):
@@ -28,6 +28,7 @@ class Globals:
 
 		self.documentation = ""       # internal documentation
 		self.deleteds = []                 # not saved, just temporary
+		self.oldStyle = False           # can be set to True so that we load pre-13 images
 
 	def repaint_all(self):
 		#print("----------repaint all----------------")
@@ -66,6 +67,12 @@ class Globals:
 				newlist.append(widget)
 		self.widgets = newlist
 
+	def deleteAll(self):
+		self.deleteds = []
+		for widget in self.widgets:
+			self.delWidget(widget)
+			self.deleteds.append(widget)
+
 	def parse(self, image):
 		lines = image.split("\n")
 		if lines[0].startswith("#."):
@@ -81,21 +88,18 @@ class Globals:
 
 		headerline = lines[0]
 		if headerline.startswith("PYPYGUIM "):
-			saved_version = int(headerline.split(";")[0].split(" ")[1])  
-			if current_version - saved_version > acceptable_difference:
-				print(">>>>>>> This PYPYGUIM file is version " + saved_version + " and does not match the current program version " + current_version)
-				return
+			saved_version = int(headerline.split(";")[0].split(" ")[1])
+			if not self.oldStyle and current_version - saved_version > acceptable_difference:
+				return "This PYPYGUIM file is version " + saved_version + " and does not match the current program version " + current_version
 		else:
-			print(">>>>>>> ERROR!  This is not a PYPYGUIM file! <<<<<<<<<<<")
-			sys.stdout.flush()
-			return
+			return "ERROR!  This is not a PYPYGUIM file!!"
 		self.lastSavedTime = headerline.split(";")[1]
 
 		i = 0
 		found = False
 		while i < len(lines):
 			if lines[i].startswith("$$$options"):
-				print("found $$$options at i="+str(i))
+				#print("found $$$options at i="+str(i))
 				found = True
 				break
 			i += 1
@@ -106,11 +110,11 @@ class Globals:
 				if lines[i].startswith("$$$end-options"):
 					break
 				if lines[i].startswith("title:"):
-					print("title is "+ self.title)
+					#print("title is "+ self.title)
 					self.title = lines[i][6:]
 				if lines[i].startswith("bgcolor:"):
 					self.bgcolor = lines[i][8:]
-					print("bgcolor = " + self.bgcolor)
+					#print("bgcolor = " + self.bgcolor)
 				if lines[i].startswith("geom:"):
 					temp = lines[i][5:].split("x")
 					self.window_width = int(temp[0])
@@ -186,13 +190,17 @@ class Globals:
 
 				#print("widget lines = "+str(widget_image))
 				w = MyWidget()
-				w.parse(widget_image)
+				if self.oldStyle:
+					w.parseOldStyle(widget_image)
+				else:
+					w.parse(widget_image)
 				self.widgets.append(w)
 
 			elif lines[i].startswith("$%end"):
 				break
 			else:
 				i += 1   # shouldn't be here...
+		return "okay"
 
 	def applyCanvas(self, somecanvas):
 		if somecanvas is None:
@@ -263,8 +271,18 @@ class Globals:
 				image += widget.makeListHandler()
 			if widget.mytype == "radiobutton":
 				image += widget.makeRadiobuttonHandler()
-
+		
 		image += "#------------------------------ end of choice and list code -------------------------------------------\n"
+		image += "#------------------------------ button and other code handlers -------------------------------------------\n"
+
+		for widget in self.widgets:
+			if widget.mytype == "button" or widget.mytype == "textfield":
+				if widget.code.strip() != "":
+					if not utilitycode.justIdentifier(widget.code):
+						image += f"def handler_for_{widget.name}():\n"
+						for line in widget.code.split("\n"):
+							image += "     " + line + "\n"
+
 		image += guitemplatecode.window_init_code1
 		image += "     root.geometry(\"" + str(self.window_width) + "x" + str(self.window_height) + "\")\n"
 		image += "     root.configure(background=\"" + self.bgcolor + "\")\n"
@@ -290,7 +308,8 @@ class Globals:
 
 		globals_line = "     global "
 		for widget in self.widgets:
-			globals_line += widget.name + ","
+			if widget.name != "":
+				globals_line += widget.name + ","
 		globals_line = globals_line[0:-1]    # trim off final comma
 		image += globals_line + "\n"
 
@@ -325,10 +344,7 @@ class Globals:
 					image += f"     {menuname} = Menu(topmenu)\n"
 					image += f"     topmenu.add_cascade(label=\"{line}\", menu={menuname}, underline=0)\n"
 				else:
-					#print("...line="+line)
 					parts = line.strip().split("&")
-					#print("...parts="+str(parts))
-					#sys.stdout.flush()
 					menuitem = parts[0]
 					command="nothing"
 					if len(parts) == 2:
@@ -422,7 +438,54 @@ class MyWidget:
 		self.canvas = canvas
 
 	def parse(self, lines):
-		print("parsing: " + str(lines) + "\n")
+		print("PARSING WIDGET IMAGE:")
+		print(lines)
+		sys.stdout.flush()
+		parts = lines[0][4:].strip().split(";;;")        # this is the $$$$id: line
+		for part in parts:
+			part = part.strip()
+			if part.startswith("id::"):
+				self.id = int(part[4:])
+			elif part.startswith("name::"):
+				self.name = part[6:]
+			elif part.startswith("type::"):
+				self.mytype = part[6:]
+			elif part.startswith("start::"):
+				xparts = part[7:].split(",")
+				self.startPoint = Point(int(xparts[0]), int(xparts[1]))
+			elif part.startswith("end::"):
+				xparts = part[5:].split(",")
+				self.endPoint = Point(int(xparts[0]), int(xparts[1]))
+		n = lines[0].find("label::")
+		if n != -1:
+			self.label = lines[0][n+7:]        # avoids any breaking space in the label
+		self.width = self.endPoint.x - self.startPoint.x
+		self.height = self.endPoint.y - self.startPoint.y
+		for line in lines:
+			if line.startswith("code::"):
+				print("line[6:] = ",lines[5:])
+				sys.stdout.flush()
+				self.code = utilitycode.decodeNewlines(line[6:])
+			elif line.startswith("myvar::"):
+				self.myvar = line[7:]
+			elif line.startswith("colors::"):
+				pieces = line[8:].strip().split(" ")
+				self.bgcolor = pieces[0].split(":")[1]              # colors use single colons
+				self.fgcolor = pieces[1].split(":")[1]
+			elif line.startswith("choices::"):
+				line = line[9:]
+				self.choices = line.split(";")
+			elif line.startswith("radiogroup::"):
+				self.radiogroup = line[12:].strip()
+			elif line.startswith("scrollbaroptions::"):
+				self.scrollbaroptions = line[18:].strip()
+			elif line.startswith("font::"):
+				self.font = line[6:].strip()
+
+	def parseOldStyle(self, lines):
+		print("PARSING WIDGET IMAGE:")
+		print(lines)
+		sys.stdout.flush()
 		parts = lines[0][4:].strip().split(" ")        # this is the $$$$id: line
 		for part in parts:
 			part = part.strip()
@@ -438,26 +501,22 @@ class MyWidget:
 			elif part.startswith("end:"):
 				xparts = part[4:].split(",")
 				self.endPoint = Point(int(xparts[0]), int(xparts[1]))
-				print("just parsed endpoint = "+str(self.endPoint))
 		n = lines[0].find("label:")
 		if n != -1:
 			self.label = lines[0][n+6:]        # avoids any breaking space in the label
 		self.width = self.endPoint.x - self.startPoint.x
 		self.height = self.endPoint.y - self.startPoint.y
-		print("just parsed self.height = "+str(self.height))
 		for line in lines:
 			if line.startswith("code:"):
-				self.code = line[5:]
+				print("line[5:] = ",lines[5:])
+				sys.stdout.flush()
+				self.code = utilitycode.decodeNewlines(line[5:])
 			elif line.startswith("myvar:"):
 				self.myvar = line[6:]
 			elif line.startswith("colors:"):
-				print("line="+line)
 				pieces = line[7:].strip().split(" ")
-				print("pieces="+str(pieces))
 				self.bgcolor = pieces[0].split(":")[1]
 				self.fgcolor = pieces[1].split(":")[1]
-				print("self.bgcolor = "+self.bgcolor)
-				sys.stdout.flush()
 			elif line.startswith("choices:"):
 				line = line[8:]
 				self.choices = line.split(";")
@@ -558,38 +617,45 @@ class MyWidget:
 		#print("Resizing " + str(self.id) + "   self.width="+str(self.width))
 
 	def makeImage(self):
-		s = "$$$$" + "id:" + str(self.id) + " name:" + self.name + " type:" + self.mytype + " "
-		s += "start:" + str(self.startPoint.x) + "," + str(self.startPoint.y) + " " + "end:" + str(self.endPoint.x) + "," + str(self.endPoint.y) +  \
-		        " label:" + self.label + "\n"
-		s += "font:" + self.font + "\n"
-		s += "colors: bgcolor:" + self.bgcolor + " fgcolor:" + self.fgcolor + "\n"
+		s = "$$$$" + "id::" + str(self.id) + ";;;name::" + self.name + ";;;type::" + self.mytype + ";;;"
+		s += "start::" + str(self.startPoint.x) + "," + str(self.startPoint.y) + ";;;" + "end::" + str(self.endPoint.x) + "," + str(self.endPoint.y) +  \
+		        ";;;label::" + self.label + "\n"
+		s += "font::" + self.font + "\n"
+		s += "colors:: bgcolor:" + self.bgcolor + " fgcolor:" + self.fgcolor + "\n"         # colors use single colons
 		if self.code != "":
-			s += "code:" + self.code + "\n"
+			s += "code::" + utilitycode.encodeNewlines(self.code) + "\n"
 		if self.myvar != "":
-			s += "myvar:" + self.myvar + "\n"
+			s += "myvar::" + self.myvar + "\n"
 		if self.choices != []:
-			s += "choices:" + ";".join(self.choices) + "\n"
+			s += "choices::" + ";".join(self.choices) + "\n"
 		if self.radiogroup != "":
-			s += "radiogroup:" + self.radiogroup + "\n"
+			s += "radiogroup::" + self.radiogroup + "\n"
 		if self.scrollbaroptions != "":
-			s += "scrollbaroptions:" + self.scrollbaroptions + "\n"
+			s += "scrollbaroptions::" + self.scrollbaroptions + "\n"
 		s += "//end:\n"
 		return s
 
 	def writePython(self):
 		s = ""
 		if self.mytype == "button":
-			print("button, self.code = "+self.code)
-			s = self.name + " = Button(root, text = \"" + self.label + "\",width=" + str(self.width) +",height=" + str(self.height) 
-			s += ",command=" + ("nothing" if self.code == "" else self.code) + ")\n"
+			s = self.name + " = Button(root, text = \"" + self.label + "\",width=" + str(self.width) +",height=" + str(self.height)
+			if self.code == "" or utilitycode.justIdentifier(self.code):
+				codeWord = self.code
+			else:
+				codeWord = "handler_for_"+self.name
+			s += ",command=" + ("nothing" if self.code == "" else codeWord) + ")\n"
 		elif self.mytype == "textfield":
 			if self.myvar == "":
 				self.myvar = self.name + "_var"
 			s = self.myvar + "=StringVar()\n"
 			s += self.myvar + ".set(\"" + self.label + "\")\n"
 			s += self.name + "=Entry(root,width=" + str(self.width) + ",textvariable=" + self.myvar + ")\n"
+			if self.code != "" and utilitycode.justIdentifier(self.code):
+				codeWord = self.code
+			else:
+				codeWord = "handler_for_"+self.name
 			if self.code.strip() != "":
-				s += self.name + ".bind('<Return>', lambda x: " + self.code + "())\n"
+				s += self.name + ".bind('<Return>', lambda x: " + codeWord + "())\n"
 		elif self.mytype == "label":
 			s = self.name + " = Label(root,text=\"" + self.label + "\",width=" +  str(self.width) +",height=" + str(self.height)  + ")\n"
 		elif self.mytype == "textarea":
@@ -685,7 +751,7 @@ class MyWidget:
 	def makeRadiobuttonHandler(self):
 		s = f"def {self.name}_item_code():\n"
 		if self.code.strip() == "": self.code = "nothing"
-		s += f"     {self.code}()\n"
+		s += f"     {self.code}()\n"            ######################## NEED TO FIX THIS ##########################
 		return s
 
 	def alignX(self, someBox, changeWidth):

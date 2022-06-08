@@ -181,7 +181,7 @@ import utilitycode
 import NewHelpWindow
 ##%ENDCODE
 
-class PropWindow():
+class PropertyWindow():
 #--------------------internally defined widget classes, do not change!--------------------
      class ScrolledText(Frame):
      	def __init__(self, parent=None):
@@ -211,13 +211,6 @@ class PropWindow():
      		self.text.insert(END,text)
 
 #--------------------functions for widget event handlers, do not change!--------------------
-     def fontHelpB_action_code(self):
-         #hw = NewHelpWindow()
-         #hw.showTopic("Fonts")
-         #NewHelpWindow.main()
-         
-         NewHelpWindow.main2("Fonts")
-     
      def widgetTypeCH_item_code(self):
          self.myreconfig()
      
@@ -364,8 +357,18 @@ class PropWindow():
      def standardFontB_action_code(self):
          settext(self.fontTF, "Helvetica 9")
      
+     def fontHelpB_action_code(self):
+         #hw = NewHelpWindow()
+         #hw.showTopic("Fonts")
+         #NewHelpWindow.main()
+         
+         NewHelpWindow.main2("Fonts")
+     
      def scrollbarOptionsB_action_code(self):
          settext(self.scrollbarOptionsTF, "from_=0, to=100, length=200, tickinterval=5, showvalue=YES, orient='horizontal'")
+     
+     def codeHelpB_action_code(self):
+         NewHelpWindow.main2("Handler code")
 
 #--------------------Menu defs, do not change!--------------------
 
@@ -373,7 +376,7 @@ class PropWindow():
 #--------------------extra class code, you can change this!--------------------
 ##%EXTRACLASSCODE
      import sys
-     
+     import utilitycode
      
      def setTarget(self, newtopBox):
           self.topBox = newtopBox
@@ -383,7 +386,7 @@ class PropWindow():
           settext(self.widthTF, str(newtopBox.width))
           settext(self.heightTF, str(newtopBox.height))
           settext(self.labelTF, newtopBox.label)
-          settext(self.codeTF, newtopBox.code)
+          settext(self.codeTA, newtopBox.code)
           #print("newtopBox.bgcolor = "+newtopBox.bgcolor)
           settext(self.customBgColorTF, newtopBox.bgcolor)
           if (newtopBox.bgcolor.startswith("#")):
@@ -430,24 +433,32 @@ class PropWindow():
           #self.root.update()
           #time.sleep(0.5)
      
-     '''
-     def refresh(self):
-         self.destroy()
-         self.__init__()
-     '''
-     
      def setGlobals(self, globals):
           self.globals = globals
           print("SetGlobals, parent="+str(self.globals))
           sys.stdout.flush()
      
+     def check(self):
+          ''' This checks various things about this widget.  It's name must not be blank,
+              for one thing.
+          '''
+          varname = gettext(self.nameTF)
+          if varname == "":
+               if askforyesno("There is no variable name!\nDo you want to abandon this?"):
+                     return False
+          if not utilitycode.justIdentifier(varname):
+               if askforyesno("The variable name is illegal!\nDo you want to abandon this?"):
+                     return False
+          return True
+     
      def saveBack(self):
+          if not self.check(): return
           self.topBox.name = gettext(self.nameTF)
           self.topBox.updateWidth(int(gettext(self.widthTF)))
           self.topBox.updateHeight(int(gettext(self.heightTF)))
           self.topBox.mytype = gettext(self.widgetTypeCH)
           self.topBox.label = gettext(self.labelTF)
-          self.topBox.code = gettext(self.codeTF)
+          self.topBox.code = gettext(self.codeTA)
           self.topBox.bgcolor = gettext(self.customBgColorTF)
           self.topBox.fgcolor = gettext(self.customFgColorTF)
           self.topBox.font = gettext(self.fontTF)
@@ -466,15 +477,10 @@ class PropWindow():
 
      def __init__(self):
           self.root=Tk()
-          self.root.geometry("475x448")
+          self.root.geometry("475x464")
           self.root.configure(background='#ebebeb')
           self.root.title("Property Window")
 #--------------------widget making code, do not change anything from here to the end of the file!--------------------
-          self.fontHelpB = Button(self.root, text="?",width=28,height=24,command=self.fontHelpB_action_code)
-          self.fontHelpB.place(x=440,y=143, width=28, height=24)
-          self.fontHelpB.config(font=("SansSerif", 10, 'normal'))
-          self.fontHelpB.config(bg=("#ffffff"))
-          self.fontHelpB.config(fg=("#000000"))
           self.component0BL = Label(self.root, text="Name:",width=56,height=22)
           self.component0BL.place(x=107,y=4, width=56, height=22)
           self.component0BL.config(font=("SansSerif", 10, 'normal'))
@@ -532,12 +538,12 @@ class PropWindow():
           self.widgetTypeCH.menu.add_checkbutton(label='canvas',variable=self.widgetTypeCH_xvar10, command=functools.partial(self.widgetTypeCH_respond, 10))
           self.widgetTypeCH.bind("<<ListboxSelect>>", (lambda event: self.widgetTypeCH_item_code()))
           self.applyB = Button(self.root, text="Apply",width=67,height=26,command=self.applyB_action_code)
-          self.applyB.place(x=179,y=415, width=67, height=26)
+          self.applyB.place(x=177,y=431, width=67, height=26)
           self.applyB.config(font=("SansSerif", 10, 'normal'))
           self.applyB.config(bg=("#ffffff"))
           self.applyB.config(fg=("#000000"))
           self.cancelB = Button(self.root, text="Cancel",width=67,height=26,command=self.cancelB_action_code)
-          self.cancelB.place(x=248,y=415, width=67, height=26)
+          self.cancelB.place(x=246,y=431, width=67, height=26)
           self.cancelB.config(font=("SansSerif", 10, 'normal'))
           self.cancelB.config(bg=("#ffffff"))
           self.cancelB.config(fg=("#000000"))
@@ -577,18 +583,17 @@ class PropWindow():
           self.idTF.config(font=("SansSerif", 10, 'normal'))
           self.idTF.config(fg=("#000000"))
           self.idTF.config(bg=("#ffffff"))
-          self.label3L = Label(self.root, text="Function to call:",width=103,height=25)
-          self.label3L.place(x=15,y=87, width=103, height=25)
+          self.label3L = Label(self.root, text="Function name",width=110,height=23)
+          self.label3L.place(x=10,y=86, width=110, height=23)
           self.label3L.config(font=("SansSerif", 10, 'normal'))
           self.label3L.config(bg=self.root['bg'])
           self.label3L.config(fg=("#000000"))
-          self.Button1_var=StringVar()
-          self.Button1_var.set("")
-          self.codeTF = Entry(self.root,width=244, textvariable=self.Button1_var)
-          self.codeTF.place(x=121,y=87, width=244, height=24)
-          self.codeTF.config(font=("SansSerif", 10, 'normal'))
-          self.codeTF.config(fg=("#000000"))
-          self.codeTF.config(bg=("#ffffff"))
+          self.codeTA = self.ScrolledText(self.root)
+          self.codeTA.place(x=121,y=87, width=358, height=75)
+          self.codeTA.settext("")
+          self.codeTA.text.config(font=("SansSerif", 9, 'normal'))
+          self.codeTA.text.config(bg=("#ffffff"))
+          self.codeTA.text.config(fg=("#000000"))
           self.label4L = Label(self.root, text="Label:",width=49,height=25)
           self.label4L.place(x=69,y=59, width=49, height=25)
           self.label4L.config(font=("SansSerif", 10, 'normal'))
@@ -602,12 +607,12 @@ class PropWindow():
           self.labelTF.config(fg=("#000000"))
           self.labelTF.config(bg=("#ffffff"))
           self.component7BL = Label(self.root, text="Background color:",width=110,height=25)
-          self.component7BL.place(x=10,y=174, width=110, height=25)
+          self.component7BL.place(x=9,y=224, width=110, height=25)
           self.component7BL.config(font=("SansSerif", 10, 'normal'))
           self.component7BL.config(bg=self.root['bg'])
           self.component7BL.config(fg=("#000000"))
           self.bgColorCH = Menubutton(self.root, text='')
-          self.bgColorCH.place(x=122,y=173, width=127, height=27)
+          self.bgColorCH.place(x=121,y=223, width=127, height=27)
           self.bgColorCH.config(font=("SansSerif", 10, 'normal'))
           self.bgColorCH.config(bg=("#ffffff"))
           self.bgColorCH.config(fg=("#000000"))
@@ -639,24 +644,24 @@ class PropWindow():
           self.Button1_var=StringVar()
           self.Button1_var.set("")
           self.customBgColorTF = Entry(self.root,width=106, textvariable=self.Button1_var)
-          self.customBgColorTF.place(x=252,y=172, width=106, height=28)
+          self.customBgColorTF.place(x=251,y=222, width=106, height=28)
           self.customBgColorTF.config(font=("SansSerif", 10, 'normal'))
           self.customBgColorTF.config(fg=("#000000"))
           self.customBgColorTF.config(bg=("#ffffff"))
           self.Button1_var=StringVar()
           self.Button1_var.set("")
           self.customFgColorTF = Entry(self.root,width=106, textvariable=self.Button1_var)
-          self.customFgColorTF.place(x=252,y=204, width=106, height=28)
+          self.customFgColorTF.place(x=251,y=254, width=106, height=28)
           self.customFgColorTF.config(font=("SansSerif", 10, 'normal'))
           self.customFgColorTF.config(fg=("#000000"))
           self.customFgColorTF.config(bg=("#ffffff"))
           self.label5L = Label(self.root, text="Foreground color:",width=110,height=25)
-          self.label5L.place(x=10,y=206, width=110, height=25)
+          self.label5L.place(x=9,y=256, width=110, height=25)
           self.label5L.config(font=("SansSerif", 10, 'normal'))
           self.label5L.config(bg=self.root['bg'])
           self.label5L.config(fg=("#000000"))
           self.fgColorCH = Menubutton(self.root, text='')
-          self.fgColorCH.place(x=122,y=205, width=127, height=27)
+          self.fgColorCH.place(x=121,y=255, width=127, height=27)
           self.fgColorCH.config(font=("SansSerif", 10, 'normal'))
           self.fgColorCH.config(bg=("#ffffff"))
           self.fgColorCH.config(fg=("#000000"))
@@ -686,85 +691,100 @@ class PropWindow():
           self.fgColorCH.menu.add_checkbutton(label='--custom--',variable=self.fgColorCH_xvar7, command=functools.partial(self.fgColorCH_respond, 7))
           self.fgColorCH.bind("<<ListboxSelect>>", (lambda event: self.fgColorCH_item_code()))
           self.fontL = Label(self.root, text="Font:",width=41,height=24)
-          self.fontL.place(x=78,y=143, width=41, height=24)
+          self.fontL.place(x=77,y=193, width=41, height=24)
           self.fontL.config(font=("SansSerif", 10, 'normal'))
           self.fontL.config(bg=self.root['bg'])
           self.fontL.config(fg=("#000000"))
           self.Button1_var=StringVar()
           self.Button1_var.set("")
           self.fontTF = Entry(self.root,width=244, textvariable=self.Button1_var)
-          self.fontTF.place(x=121,y=143, width=244, height=24)
+          self.fontTF.place(x=120,y=193, width=244, height=24)
           self.fontTF.config(font=("SansSerif", 10, 'normal'))
           self.fontTF.config(fg=("#000000"))
           self.fontTF.config(bg=("#ffffff"))
           self.standardFontB = Button(self.root, text="Standard",width=68,height=24,command=self.standardFontB_action_code)
-          self.standardFontB.place(x=369,y=143, width=68, height=24)
+          self.standardFontB.place(x=368,y=193, width=68, height=24)
           self.standardFontB.config(font=("SansSerif", 10, 'normal'))
           self.standardFontB.config(bg=("#ffffff"))
           self.standardFontB.config(fg=("#000000"))
+          self.fontHelpB = Button(self.root, text="?",width=28,height=24,command=self.fontHelpB_action_code)
+          self.fontHelpB.place(x=439,y=193, width=28, height=24)
+          self.fontHelpB.config(font=("SansSerif", 10, 'normal'))
+          self.fontHelpB.config(bg=("#ffffff"))
+          self.fontHelpB.config(fg=("#000000"))
           self.label6L = Label(self.root, text="Choices:",width=68,height=25)
-          self.label6L.place(x=52,y=238, width=68, height=25)
+          self.label6L.place(x=51,y=288, width=68, height=25)
           self.label6L.config(font=("SansSerif", 10, 'normal'))
           self.label6L.config(bg=self.root['bg'])
           self.label6L.config(fg=("#000000"))
           self.choicesTA = self.ScrolledText(self.root)
-          self.choicesTA.place(x=123,y=238, width=354, height=110)
+          self.choicesTA.place(x=122,y=288, width=354, height=110)
           self.choicesTA.settext("")
           self.choicesTA.text.config(font=("SansSerif", 10, 'normal'))
           self.choicesTA.text.config(bg=("#ffffff"))
           self.choicesTA.text.config(fg=("#000000"))
           self.label7L = Label(self.root, text="(for checkboxes",width=93,height=21)
-          self.label7L.place(x=28,y=266, width=93, height=21)
+          self.label7L.place(x=27,y=316, width=93, height=21)
           self.label7L.config(font=("SansSerif", 10, 'normal'))
           self.label7L.config(bg=self.root['bg'])
           self.label7L.config(fg=("#000000"))
           self.label8L = Label(self.root, text="and lists)",width=93,height=21)
-          self.label8L.place(x=28,y=289, width=93, height=21)
+          self.label8L.place(x=27,y=339, width=93, height=21)
           self.label8L.config(font=("SansSerif", 9, 'normal'))
           self.label8L.config(bg=self.root['bg'])
           self.label8L.config(fg=("#000000"))
           self.scrollbarOptionsB = Button(self.root, text="Sample",width=71,height=21,command=self.scrollbarOptionsB_action_code)
-          self.scrollbarOptionsB.place(x=405,y=378, width=71, height=21)
+          self.scrollbarOptionsB.place(x=404,y=428, width=71, height=21)
           self.scrollbarOptionsB.config(font=("SansSerif", 9, 'normal'))
           self.scrollbarOptionsB.config(bg=("#ffffff"))
           self.scrollbarOptionsB.config(fg=("#000000"))
           self.label9L = Label(self.root, text="Radiobutton group:",width=111,height=25)
-          self.label9L.place(x=8,y=115, width=111, height=25)
+          self.label9L.place(x=7,y=163, width=111, height=25)
           self.label9L.config(font=("SansSerif", 10, 'normal'))
           self.label9L.config(bg=self.root['bg'])
           self.label9L.config(fg=("#000000"))
           self.Button1_var=StringVar()
           self.Button1_var.set("")
           self.radiogroupTF = Entry(self.root,width=244, textvariable=self.Button1_var)
-          self.radiogroupTF.place(x=121,y=115, width=244, height=24)
+          self.radiogroupTF.place(x=120,y=165, width=244, height=24)
           self.radiogroupTF.config(font=("SansSerif", 10, 'normal'))
           self.radiogroupTF.config(fg=("#000000"))
           self.radiogroupTF.config(bg=("#ffffff"))
           self.component8BL = Label(self.root, text="Scrollbar options:",width=110,height=19)
-          self.component8BL.place(x=12,y=355, width=110, height=19)
+          self.component8BL.place(x=11,y=405, width=110, height=19)
           self.component8BL.config(font=("SansSerif", 10, 'normal'))
           self.component8BL.config(bg=self.root['bg'])
           self.component8BL.config(fg=("#000000"))
           self.Button1_var=StringVar()
           self.Button1_var.set("")
           self.scrollbarOptionsTF = Entry(self.root,width=350, textvariable=self.Button1_var)
-          self.scrollbarOptionsTF.place(x=125,y=354, width=350, height=22)
+          self.scrollbarOptionsTF.place(x=124,y=404, width=350, height=22)
           self.scrollbarOptionsTF.config(font=("SansSerif", 9, 'normal'))
           self.scrollbarOptionsTF.config(fg=("#000000"))
           self.scrollbarOptionsTF.config(bg=("#ffffff"))
+          self.codeHelpB = Button(self.root, text="?",width=23,height=25,command=self.codeHelpB_action_code)
+          self.codeHelpB.place(x=97,y=134, width=23, height=25)
+          self.codeHelpB.config(font=("SansSerif", 10, 'normal'))
+          self.codeHelpB.config(bg=("#ffffff"))
+          self.codeHelpB.config(fg=("#000000"))
+          self.label10L = Label(self.root, text="or code:",width=60,height=23)
+          self.label10L.place(x=60,y=110, width=60, height=23)
+          self.label10L.config(font=("SansSerif", 10, 'normal'))
+          self.label10L.config(bg=self.root['bg'])
+          self.label10L.config(fg=("#000000"))
 
           self.post_initialization()
 if __name__ == '__main__':
-     tempwin=PropWindow()
+     tempwin=PropertyWindow()
      tempwin.root.mainloop()
 
 ####DIRECTIVES
 ##%START
-##%PROGRAM DATE=Fri, Jun 11, 2021 9:25:02 PM
+##%PROGRAM DATE=Sat, Jun 12, 2021 11:06:26 AM
 ##%VERSION=PY2
 ##%CLASS_STYLE=class
-##%WHENWRITTEN=Mon Jun 06 21:05:53 EDT 2022
-##%CLASSNAME=PropWindow
+##%WHENWRITTEN=Wed Jun 08 15:57:27 EDT 2022
+##%CLASSNAME=PropertyWindow
 ##%PACKAGENAME=
 ##%DIRECTORY=
 ##%GUITYPE=Python
@@ -782,7 +802,7 @@ if __name__ == '__main__':
 ##%ENDMENU
 ##%BGCOLOR=235,235,235
 ##%WIDTH=490
-##%HEIGHT=503
+##%HEIGHT=519
 ##%COMPONENTS
 ##%COMPONENT 
 ##%  id=1
@@ -905,8 +925,8 @@ if __name__ == '__main__':
 ##%  type=Button
 ##%  label=Apply
 ##%  varname=applyB
-##%  startpoint=179,465
-##%  endpoint=246,491
+##%  startpoint=177,481
+##%  endpoint=244,507
 ##%  fgcolor=0,0,0
 ##%  bgcolor=255,255,255
 ##%  fontname=SansSerif
@@ -934,8 +954,8 @@ if __name__ == '__main__':
 ##%  type=Button
 ##%  label=Cancel
 ##%  varname=cancelB
-##%  startpoint=248,465
-##%  endpoint=315,491
+##%  startpoint=246,481
+##%  endpoint=313,507
 ##%  fgcolor=0,0,0
 ##%  bgcolor=255,255,255
 ##%  fontname=SansSerif
@@ -1135,10 +1155,10 @@ if __name__ == '__main__':
 ##%COMPONENT 
 ##%  id=15
 ##%  type=Label
-##%  label=Function to call:
+##%  label=Function name
 ##%  varname=label3L
-##%  startpoint=15,137
-##%  endpoint=118,162
+##%  startpoint=10,136
+##%  endpoint=120,159
 ##%  fgcolor=0,0,0
 ##%  bgcolor=255,255,255
 ##%  fontname=SansSerif
@@ -1163,15 +1183,15 @@ if __name__ == '__main__':
 ##%END
 ##%COMPONENT 
 ##%  id=16
-##%  type=TextField
+##%  type=TextArea
 ##%  label=
-##%  varname=codeTF
+##%  varname=codeTA
 ##%  startpoint=121,137
-##%  endpoint=365,161
+##%  endpoint=479,212
 ##%  fgcolor=0,0,0
 ##%  bgcolor=255,255,255
 ##%  fontname=SansSerif
-##%  fontsize=10
+##%  fontsize=9
 ##%  fontstyle=plain
 ##%  samebgcolor=1
 ##%  fixedx=0
@@ -1253,8 +1273,8 @@ if __name__ == '__main__':
 ##%  type=Label
 ##%  label=Background color:
 ##%  varname=component7BL
-##%  startpoint=10,224
-##%  endpoint=120,249
+##%  startpoint=9,274
+##%  endpoint=119,299
 ##%  fgcolor=0,0,0
 ##%  bgcolor=255,255,255
 ##%  fontname=SansSerif
@@ -1282,8 +1302,8 @@ if __name__ == '__main__':
 ##%  type=Choice
 ##%  label=
 ##%  varname=bgColorCH
-##%  startpoint=122,223
-##%  endpoint=249,250
+##%  startpoint=121,273
+##%  endpoint=248,300
 ##%  fgcolor=0,0,0
 ##%  bgcolor=255,255,255
 ##%  fontname=SansSerif
@@ -1311,8 +1331,8 @@ if __name__ == '__main__':
 ##%  type=TextField
 ##%  label=
 ##%  varname=customBgColorTF
-##%  startpoint=252,222
-##%  endpoint=358,250
+##%  startpoint=251,272
+##%  endpoint=357,300
 ##%  fgcolor=0,0,0
 ##%  bgcolor=255,255,255
 ##%  fontname=SansSerif
@@ -1340,8 +1360,8 @@ if __name__ == '__main__':
 ##%  type=TextField
 ##%  label=
 ##%  varname=customFgColorTF
-##%  startpoint=252,254
-##%  endpoint=358,282
+##%  startpoint=251,304
+##%  endpoint=357,332
 ##%  fgcolor=0,0,0
 ##%  bgcolor=255,255,255
 ##%  fontname=SansSerif
@@ -1369,8 +1389,8 @@ if __name__ == '__main__':
 ##%  type=Label
 ##%  label=Foreground color:
 ##%  varname=label5L
-##%  startpoint=10,256
-##%  endpoint=120,281
+##%  startpoint=9,306
+##%  endpoint=119,331
 ##%  fgcolor=0,0,0
 ##%  bgcolor=255,255,255
 ##%  fontname=SansSerif
@@ -1398,8 +1418,8 @@ if __name__ == '__main__':
 ##%  type=Choice
 ##%  label=
 ##%  varname=fgColorCH
-##%  startpoint=122,255
-##%  endpoint=249,282
+##%  startpoint=121,305
+##%  endpoint=248,332
 ##%  fgcolor=0,0,0
 ##%  bgcolor=255,255,255
 ##%  fontname=SansSerif
@@ -1427,8 +1447,8 @@ if __name__ == '__main__':
 ##%  type=Label
 ##%  label=Font:
 ##%  varname=fontL
-##%  startpoint=78,193
-##%  endpoint=119,217
+##%  startpoint=77,243
+##%  endpoint=118,267
 ##%  fgcolor=0,0,0
 ##%  bgcolor=255,255,255
 ##%  fontname=SansSerif
@@ -1456,8 +1476,8 @@ if __name__ == '__main__':
 ##%  type=TextField
 ##%  label=
 ##%  varname=fontTF
-##%  startpoint=121,193
-##%  endpoint=365,217
+##%  startpoint=120,243
+##%  endpoint=364,267
 ##%  fgcolor=0,0,0
 ##%  bgcolor=255,255,255
 ##%  fontname=SansSerif
@@ -1485,8 +1505,8 @@ if __name__ == '__main__':
 ##%  type=Button
 ##%  label=Standard
 ##%  varname=standardFontB
-##%  startpoint=369,193
-##%  endpoint=437,217
+##%  startpoint=368,243
+##%  endpoint=436,267
 ##%  fgcolor=0,0,0
 ##%  bgcolor=255,255,255
 ##%  fontname=SansSerif
@@ -1514,8 +1534,8 @@ if __name__ == '__main__':
 ##%  type=Button
 ##%  label=?
 ##%  varname=fontHelpB
-##%  startpoint=440,193
-##%  endpoint=468,217
+##%  startpoint=439,243
+##%  endpoint=467,267
 ##%  fgcolor=0,0,0
 ##%  bgcolor=255,255,255
 ##%  fontname=SansSerif
@@ -1543,8 +1563,8 @@ if __name__ == '__main__':
 ##%  type=Label
 ##%  label=Choices:
 ##%  varname=label6L
-##%  startpoint=52,288
-##%  endpoint=120,313
+##%  startpoint=51,338
+##%  endpoint=119,363
 ##%  fgcolor=0,0,0
 ##%  bgcolor=255,255,255
 ##%  fontname=SansSerif
@@ -1572,8 +1592,8 @@ if __name__ == '__main__':
 ##%  type=TextArea
 ##%  label=
 ##%  varname=choicesTA
-##%  startpoint=123,288
-##%  endpoint=477,398
+##%  startpoint=122,338
+##%  endpoint=476,448
 ##%  fgcolor=0,0,0
 ##%  bgcolor=255,255,255
 ##%  fontname=SansSerif
@@ -1601,8 +1621,8 @@ if __name__ == '__main__':
 ##%  type=Label
 ##%  label=(for checkboxes
 ##%  varname=label7L
-##%  startpoint=28,316
-##%  endpoint=121,337
+##%  startpoint=27,366
+##%  endpoint=120,387
 ##%  fgcolor=0,0,0
 ##%  bgcolor=255,255,255
 ##%  fontname=SansSerif
@@ -1630,8 +1650,8 @@ if __name__ == '__main__':
 ##%  type=Label
 ##%  label=and lists)
 ##%  varname=label8L
-##%  startpoint=28,339
-##%  endpoint=121,360
+##%  startpoint=27,389
+##%  endpoint=120,410
 ##%  fgcolor=0,0,0
 ##%  bgcolor=255,255,255
 ##%  fontname=SansSerif
@@ -1659,8 +1679,8 @@ if __name__ == '__main__':
 ##%  type=Button
 ##%  label=Sample
 ##%  varname=scrollbarOptionsB
-##%  startpoint=405,428
-##%  endpoint=476,449
+##%  startpoint=404,478
+##%  endpoint=475,499
 ##%  fgcolor=0,0,0
 ##%  bgcolor=255,255,255
 ##%  fontname=SansSerif
@@ -1688,8 +1708,8 @@ if __name__ == '__main__':
 ##%  type=Label
 ##%  label=Radiobutton group:
 ##%  varname=label9L
-##%  startpoint=8,165
-##%  endpoint=119,190
+##%  startpoint=7,213
+##%  endpoint=118,238
 ##%  fgcolor=0,0,0
 ##%  bgcolor=255,255,255
 ##%  fontname=SansSerif
@@ -1717,8 +1737,8 @@ if __name__ == '__main__':
 ##%  type=TextField
 ##%  label=
 ##%  varname=radiogroupTF
-##%  startpoint=121,165
-##%  endpoint=365,189
+##%  startpoint=120,215
+##%  endpoint=364,239
 ##%  fgcolor=0,0,0
 ##%  bgcolor=255,255,255
 ##%  fontname=SansSerif
@@ -1746,8 +1766,8 @@ if __name__ == '__main__':
 ##%  type=Label
 ##%  label=Scrollbar options:
 ##%  varname=component8BL
-##%  startpoint=12,405
-##%  endpoint=122,424
+##%  startpoint=11,455
+##%  endpoint=121,474
 ##%  fgcolor=0,0,0
 ##%  bgcolor=255,255,255
 ##%  fontname=SansSerif
@@ -1775,12 +1795,70 @@ if __name__ == '__main__':
 ##%  type=TextField
 ##%  label=
 ##%  varname=scrollbarOptionsTF
-##%  startpoint=125,404
-##%  endpoint=475,426
+##%  startpoint=124,454
+##%  endpoint=474,476
 ##%  fgcolor=0,0,0
 ##%  bgcolor=255,255,255
 ##%  fontname=SansSerif
 ##%  fontsize=9
+##%  fontstyle=plain
+##%  samebgcolor=1
+##%  fixedx=0
+##%  fixedy=0
+##%  resizable=1
+##%  filename=
+##%  scrollbar_isHorizontal=true
+##%  list_rowsMultiselect=false
+##%  minval=1
+##%  maxval=100
+##%  startingval=50
+##%  rescaleImage=1
+##%  moreoptions=
+##%  assocvarname=Button1_var
+##%  other=
+##%  codeAction=
+##%  codeItem=
+##%END
+##%COMPONENT 
+##%  id=52
+##%  type=Button
+##%  label=?
+##%  varname=codeHelpB
+##%  startpoint=97,184
+##%  endpoint=120,209
+##%  fgcolor=0,0,0
+##%  bgcolor=255,255,255
+##%  fontname=SansSerif
+##%  fontsize=10
+##%  fontstyle=plain
+##%  samebgcolor=1
+##%  fixedx=0
+##%  fixedy=0
+##%  resizable=1
+##%  filename=
+##%  scrollbar_isHorizontal=true
+##%  list_rowsMultiselect=false
+##%  minval=1
+##%  maxval=100
+##%  startingval=50
+##%  rescaleImage=1
+##%  moreoptions=
+##%  assocvarname=Button1_var
+##%  other=
+##%  codeAction=NewHelpWindow.main2("Handler code")
+##%  codeItem=
+##%END
+##%COMPONENT 
+##%  id=53
+##%  type=Label
+##%  label=or code:
+##%  varname=label10L
+##%  startpoint=60,160
+##%  endpoint=120,183
+##%  fgcolor=0,0,0
+##%  bgcolor=255,255,255
+##%  fontname=SansSerif
+##%  fontsize=10
 ##%  fontstyle=plain
 ##%  samebgcolor=1
 ##%  fixedx=0

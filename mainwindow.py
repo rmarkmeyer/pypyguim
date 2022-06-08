@@ -241,8 +241,8 @@ def dfa(eventType, event):
                else:
                     state = 4
           elif eventType == "mousedown":
-               print("thepoint="+str(thepoint))
-               print("event dict = "+str(event.__dict__))
+               #print("thepoint="+str(thepoint))
+               #print("event dict = "+str(event.__dict__))
                focusBox = globals.findBoxContainingPoint(thepoint)
                if event.widget == propertiesB:
                     openPropertyWindow()
@@ -253,7 +253,7 @@ def dfa(eventType, event):
                     deselect()
                else:
                     if focusBox != topBox:
-                         print("focusBox != topBox")
+                         #print("focusBox != topBox")
                          state = 3
                          deselect()
                          select(focusBox)
@@ -306,7 +306,7 @@ def dfa(eventType, event):
                state = 8
                clear_red_outline()
           elif eventType == "mousedown":
-               print("state=7, mousedown")
+               #print("state=7, mousedown")
                focusBox = globals.findBoxContainingPoint(thepoint)
                if multiselected:
                     topBox = focusBox
@@ -319,7 +319,7 @@ def dfa(eventType, event):
                if focusBox == None:
                     state = 0
                elif focusBox != topBox:
-                    print("selected "+str(focusBox.id))
+                    #print("selected "+str(focusBox.id))
                     state = 3
                     select(focusBox)
                     focusBox.calculateOffset(thepoint)
@@ -329,6 +329,10 @@ def dfa(eventType, event):
           if eventType == "drag":
                state = 4
           elif eventType == "mousedown":
+               if event.widget == propertiesB:
+                    openPropertyWindow()
+                    state=10
+                    return
                focusBox = globals.findBoxContainingPoint(thepoint)
                if focusBox == None or focusBox != topBox:
                     state = 0
@@ -497,10 +501,12 @@ def selectBoxesInOutline():
      globals.repaint_all()
 
 def makeNewWidget():
-     global topBox
+     global topBox,startPoint,endPoint
      if state != 7:
-           popup("Need to make an outline first")
-           return
+           #  There is no red outline so we'll just make a generic button in the middle of the window
+           startPoint = Point(75, 75)
+           endPoint = Point(75+200, 75+90)
+           
      w = MyWidget()
      w.setbox(startPoint, endPoint, mycanvas)
      globals.add(w)
@@ -533,15 +539,15 @@ def startAlignmentYandHeight():
 
 
 def copyMultiSelected():
-     print("in copyMultiSelected")
+     #print("in copyMultiSelected")
      global topBox
      newBoxes = []
      currentlyMulti = []
      for widget in globals.widgets:
           if widget.multiselected:
                currentlyMulti.append(widget)
-               print(f"Box {widget.id} ")
-     print(f"There are {len(currentlyMulti)} multiselected")
+               #print(f"Box {widget.id} ")
+     #print(f"There are {len(currentlyMulti)} multiselected")
      for widget in currentlyMulti:
          newWidget = MyWidget.copy(widget)
          newWidget.startPoint = Point(widget.startPoint.x+20, widget.startPoint.y+20)
@@ -551,7 +557,7 @@ def copyMultiSelected():
          newBoxes.append(newWidget)
          widget.selected = False
          topBox = None
-     print(f"There are {len(newBoxes)} widgets in newBoxes")
+     #print(f"There are {len(newBoxes)} widgets in newBoxes")
      for widget in newBoxes:
            widget.multiselected = True
      globals.repaint_all()
@@ -574,7 +580,6 @@ def deleteMultis():
      multiselected = False
      globals.repaint_all()
 
-
 def resizeMe(event):
       w, h = event.width, event.height
       mycanvas.place(x=0, y=0, width=w, height=h-24)
@@ -584,12 +589,20 @@ def resizeMe(event):
       globals.window_width = root.winfo_width()
       globals.window_height = root.winfo_height()
 
+def clearWindow():
+     if len(globals.widgets) == 0: 
+          popup("No widgets...")
+          return
+     number = len(globals.widgets)
+     globals.deleteAll()
+     popup(f"{number} widgets deleted.\nYou can use UNDO to get all these back.")
+
 def openPropertyWindow():
      global propwin
      if topBox is None:
           popup("Click on a widget first")
           return
-     propwin = PropWindow()
+     propwin = PropertyWindow()
      propwin.setTarget(topBox)
      propwin.setGlobals(globals)
 
@@ -638,10 +651,44 @@ def loadImage(image):
      global lastLoadedImage
      lastLoadedImage = image
      globals.clear()
-     globals.parse(image)
-     globals.applyCanvas(mycanvas)
-     globals.repaint_all()
-     root.geometry(str(globals.window_width) + "x" + str(globals.window_height))
+     #print("~-~-~-~-loadImage, image=")
+     #print(image)
+     #print("\n\n\n")
+     rets = globals.parse(image)
+     if rets == "okay":
+          globals.applyCanvas(mycanvas)
+          globals.repaint_all()
+          root.geometry(str(globals.window_width) + "x" + str(globals.window_height))
+     else:
+          popup(rets)
+
+def loadOldStyle():
+     global lastFileSaved
+     filename = askopenfilename()
+     if filename is None or filename == "":
+          return
+     if os.path.isfile(filename):
+          f = open(filename)
+          contents = f.read()  #  this is a single string
+          f.close()
+          loadImageOldStyle(contents)
+          lastFileSaved = filename
+          root.title(filename)
+     print("loadData, lastFileSaved="+lastFileSaved)
+     sys.stdout.flush()
+
+def loadImageOldStyle(image):
+     global lastLoadedImage
+     lastLoadedImage = image
+     globals.clear()
+     globals.oldStyle = True
+     rets = globals.parse(image)
+     if rets == "okay":
+          globals.applyCanvas(mycanvas)
+          globals.repaint_all()
+          root.geometry(str(globals.window_width) + "x" + str(globals.window_height))
+     else:
+          popup(rets)
 
 def save():
      global lastFileSaved
@@ -670,8 +717,9 @@ def runThisGui():
      if lastFileSaved == "":
           filename = asksaveasfilename()
           if filename is None or filename == "":
-               popup("No file, nothing done")
-               return
+               #popup("No file, nothing done")
+               #return
+               filename = os.environ["USERPROFILE"]+"/Desktop/sample_python_gui.py"
           lastFileSaved = filename
      else:
           filename = lastFileSaved
@@ -800,6 +848,17 @@ def doMultiselect():
              #settext(multiselectedCB, "Multiselected")
      sys.stdout.flush()
 
+def deleteSelectedWidget():
+     global topBox
+     if topBox != None:
+            globals.delWidget(topBox)
+            copiedBox = topBox
+            globals.deleteds = [topBox]
+            topBox = None
+            globals.repaint_all()
+     else:
+            popup("You need to click on a box first.")
+
 def undoDelete():
      if len(globals.deleteds) == 0:
            popup("Nothing in the deleteds list")
@@ -837,30 +896,56 @@ def showFile(s):
 def sample1():
      loadImage(samples.sample1)
      root.title("Sample1 -- simple program")
+     global lastFileSaved
+     lastFileSaved = ""
 
 def sample2():
      loadImage(samples.sample2)
-     root.title("Sample2 -- prompt for a string")
+     root.title("Sample2 -- button code is a function")
+     global lastFileSaved
+     lastFileSaved = ""
 
 def sample3():
      loadImage(samples.sample3)
-     root.title("Sample3 -- radio buttons")
+     root.title("Sample3 -- textfields and textareas")
+     global lastFileSaved
+     lastFileSaved = ""
 
 def sample4():
      loadImage(samples.sample4)
-     root.title("Sample4 -- list widget")
+     root.title("Sample4 -- prompt for a string")
+     global lastFileSaved
+     lastFileSaved = ""
 
 def sample5():
      loadImage(samples.sample5)
-     root.title("Sample5 -- menu events")
+     root.title("Sample5 -- radio buttons")
+     global lastFileSaved
+     lastFileSaved = ""
 
 def sample6():
      loadImage(samples.sample6)
-     root.title("Sample6 -- pressing enter in a textfield")
+     root.title("Sample6 -- list widget")
+     global lastFileSaved
+     lastFileSaved = ""
 
 def sample7():
      loadImage(samples.sample7)
-     root.title("Sample7 -- all widgets")
+     root.title("Sample7 -- menu events")
+     global lastFileSaved
+     lastFileSaved = ""
+
+def sample8():
+     loadImage(samples.sample8)
+     root.title("Sample8 -- pressing enter in a textfield")
+     global lastFileSaved
+     lastFileSaved = ""
+
+def sample9():
+     loadImage(samples.sample9)
+     root.title("Sample9 -- all widgets")
+     global lastFileSaved
+     lastFileSaved = ""
 
 def openHelpWindow():
      NewHelpWindow.main()
@@ -948,9 +1033,12 @@ def main():
      menu1.add_command(label="Quit", command=quitme, underline=0)
      menu2 = Menu(topmenu)
      topmenu.add_cascade(label="Widgets", menu=menu2, underline=0)
+     menu2.add_command(label="Clear window", command=clearWindow, underline=0)
      menu2.add_command(label="New", command=makeNewWidget, underline=0)
      menu2.add_command(label="Properties", command=openPropertyWindow, underline=0)
      menu2.add_command(label="List of all widgets", command=showWidgets, underline=0)
+     menu2.add_command(label="Delete selected widget", command=deleteSelectedWidget, underline=0)
+     menu2.add_command(label="Undo last delete", command=undoDelete, underline=0)
      menu3 = Menu(topmenu)
      topmenu.add_cascade(label="Code", menu=menu3, underline=0)
      menu3.add_command(label="Code Window", command=openCodeWindow, underline=0)
@@ -980,13 +1068,15 @@ def main():
      menu8.add_command(label="Options", command=openOptionsWindow, underline=0)
      menu9 = Menu(topmenu)
      topmenu.add_cascade(label="Samples", menu=menu9, underline=0)
-     menu9.add_command(label="Simple", command=sample1, underline=0)
-     menu9.add_command(label="Prompt for name", command=sample2, underline=0)
-     menu9.add_command(label="Radio button", command=sample3, underline=0)
-     menu9.add_command(label="List example", command=sample4, underline=0)
-     menu9.add_command(label="Menu example", command=sample5, underline=0)
-     menu9.add_command(label="Pressing enter in textfield", command=sample6, underline=0)
-     menu9.add_command(label="All widgets", command=sample7, underline=0)
+     menu9.add_command(label="Simple button press", command=sample1, underline=0)
+     menu9.add_command(label="Button press 2", command=sample2, underline=0)
+     menu9.add_command(label="Textareas and textfields", command=sample3, underline=0)
+     menu9.add_command(label="Prompt for name", command=sample4, underline=0)
+     menu9.add_command(label="Radio button", command=sample5, underline=0)
+     menu9.add_command(label="List example", command=sample6, underline=0)
+     menu9.add_command(label="Menu example", command=sample7, underline=0)
+     menu9.add_command(label="Pressing enter in textfield", command=sample8, underline=0)
+     menu9.add_command(label="All widgets", command=sample9, underline=0)
      menu10 = Menu(topmenu)
      topmenu.add_cascade(label="Help", menu=menu10, underline=0)
      menu10.add_command(label="Help", command=openHelpWindow, underline=0)
@@ -1000,10 +1090,10 @@ if __name__ == '__main__':
 
 ####DIRECTIVES
 ##%START
-##%PROGRAM DATE=Fri, Jun 11, 2021 9:25:02 PM
+##%PROGRAM DATE=Sat, Jun 12, 2021 11:06:26 AM
 ##%VERSION=PY2
 ##%CLASS_STYLE=no class
-##%WHENWRITTEN=Mon Jun 06 23:10:20 EDT 2022
+##%WHENWRITTEN=Wed Jun 08 09:46:05 EDT 2022
 ##%CLASSNAME=xmainwindow
 ##%PACKAGENAME=
 ##%DIRECTORY=
@@ -1024,11 +1114,15 @@ if __name__ == '__main__':
 ##%   Save&save
 ##%   Save As...&saveas
 ##%   Save only directives&saveDirectives
+##%   #   Load old style&loadOldStyle
 ##%   Quit&quitme
 ##%Widgets
+##%   Clear window&clearWindow
 ##%   New&makeNewWidget
 ##%   Properties&openPropertyWindow
 ##%   List of all widgets&showWidgets
+##%   Delete selected widget&deleteSelectedWidget
+##%   Undo last delete&undoDelete
 ##%Code
 ##%   Code Window&openCodeWindow
 ##%   Internal documentation&openDocWindow
@@ -1051,13 +1145,15 @@ if __name__ == '__main__':
 ##%Options
 ##%  Options&openOptionsWindow
 ##%Samples
-##%   Simple&sample1
-##%   Prompt for name&sample2
-##%   Radio button&sample3
-##%   List example&sample4
-##%   Menu example&sample5
-##%   Pressing enter in textfield&sample6
-##%   All widgets&sample7
+##%   Simple button press&sample1
+##%   Button press 2&sample2
+##%   Textareas and textfields&sample3
+##%   Prompt for name&sample4
+##%   Radio button&sample5
+##%   List example&sample6
+##%   Menu example&sample7
+##%   Pressing enter in textfield&sample8
+##%   All widgets&sample9
 ##%Help
 ##%   Help&openHelpWindow
 ##%   Version&showVersion

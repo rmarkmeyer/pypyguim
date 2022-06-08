@@ -110,6 +110,23 @@ you can see both boxes and drag the new one to a new position.
 Once you've focused a box, you can delete that box by pressing
 the 'd' key.  You can undo that by pressing the 'u' key.
 
+$$$Handler code
+When you click on a button, some code usually runs in response.
+This code, which you write, usually gets data out of a widget or
+asks the user for some data, and then does some computation
+and stores the results in another widget or displays it.
+
+This code is called an event handler because it handles the
+window's response to that event.  The event for a button is a
+user click on the button.  The event for a textfield is when the
+user presses the ENTER when the cursor is sitting in that
+textfield.
+
+The code can either be written in the PropertyWindow directly,
+or it can be in a function.  If you specify just a function name,
+and nothing else, then Python looks for a function of that name
+in the 'Code Window.'
+
 $$$Code window
 The code window shows the functions and other code that
 are necessary to respond to events.  You can also put imports

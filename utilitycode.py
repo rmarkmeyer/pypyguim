@@ -30,6 +30,25 @@ def showStringInEditor(s):
 def within(somepoint, startpoint, endpoint):
      return (startpoint.x <= somepoint.x <= endpoint.x) and (startpoint.y <= somepoint.y <= endpoint.y)
 
+def justIdentifier(s):
+     "  If the string is just a single identifier, return True.  If it is code or a call or anything else, return False. "
+     for ch in s:
+          if not ch.isalnum():
+               return False
+     return True
+
+def encodeNewlines(s):
+     news = ""
+     for line in s.split("\n"):
+          if len(news) == 0:
+                news = line
+          else:
+                news += ";;;" + line
+     return news
+
+def decodeNewlines(s):
+     return s.replace(";;;", "\n")
+
 def nothing():
      pass
 
